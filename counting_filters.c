@@ -2,15 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stddef.h>
 
 /******************************************************
  *                 ESTRUCTURAS 					   	  *
  *****************************************************/
 
-struct cFilter{
+struct cfilter{
 	size_t tam;
 	int *contadores;
-	//char** trendingTopics;
 };
 
 /******************************************************
@@ -29,7 +30,7 @@ size_t hashing2 (const char *str, size_t tam) {
     unsigned long hash = 0;
     unsigned int c;
 
-    while (c = *str++)
+    while ((c = (*str++)))
        hash = c + (hash << 6) + (hash << 16) - hash;
 
     return hash % tam;
@@ -39,8 +40,9 @@ size_t hashing3 (const char *str, size_t tam){
 	unsigned long hash = 0;
 	unsigned int c;
 
-	while (c = *str++)
+	while ((c = (*str++))){
 	    hash += c;
+	}
 	return hash % tam;
 }
 
@@ -55,10 +57,17 @@ cfilter_t* cfilter_crear  (size_t tam){
 	for (int i=0; i<tam; i++){
 		cfilter->contadores[i] = 0;
 	}
+	return cfilter;
 }
 
-bool cfilter_insertar (cfilter_t* cfilter,const char* str){
-	hashing1(str,cfilter->tam);
-	hashing2(str,cfilter->tam);
-	hashing3(str,cfilter->tam);
+bool cfilter_aumentar (cfilter_t* cfilter,const char* str){
+	if (!cfilter) return false;
+	cfilter->contadores[hashing1(str,cfilter->tam)]++;
+	cfilter->contadores[hashing2(str,cfilter->tam)]++;
+	cfilter->contadores[hashing3(str,cfilter->tam)]++;
+	return true;
+}
+
+int main(){
+	return 0;
 }
