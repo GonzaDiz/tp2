@@ -54,20 +54,45 @@ cfilter_t* cfilter_crear  (size_t tam){
 	cfilter_t* cfilter = malloc(sizeof(cfilter_t)); 
 	if (!cfilter) return NULL;
 	cfilter->tam = tam;
+	int* contadores = malloc(sizeof(int) * tam);
+	if (!contadores){
+		free(cfilter);
+		return NULL;
+	}
+	cfilter->contadores = contadores;
 	for (int i=0; i<tam; i++){
 		cfilter->contadores[i] = 0;
 	}
 	return cfilter;
 }
 
-bool cfilter_aumentar (cfilter_t* cfilter,const char* str){
-	if (!cfilter) return false;
+void cfilter_aumentar (cfilter_t* cfilter,const char* str){
 	cfilter->contadores[hashing1(str,cfilter->tam)]++;
 	cfilter->contadores[hashing2(str,cfilter->tam)]++;
 	cfilter->contadores[hashing3(str,cfilter->tam)]++;
-	return true;
 }
 
-int main(){
-	return 0;
+size_t cfilter_apariciones (cfilter_t* cfilter, const char* str){
+	size_t apariciones = 0;
+	apariciones = cfilter->contadores[hashing1(str,cfilter->tam)];
+	if (apariciones > cfilter->contadores[hashing2(str,cfilter->tam)]) apariciones = cfilter->contadores[hashing2(str,cfilter->tam)];
+	if (apariciones > cfilter->contadores[hashing3(str,cfilter->tam)]) apariciones = cfilter->contadores[hashing3(str,cfilter->tam)];
+	return apariciones;
 }
+
+//Algunos tests.
+/*int main(){
+	char* str[] = {"lucas","charly","gonza","carlos","bruno","bruno","emmanuel","santiago","eugenia","eguenia","valery","belen","ricardo","monica","laura","monica","gonzalo"};
+	size_t cant = 17;
+	cfilter_t* cfilter = cfilter_crear(500);
+	for (int i=0; i<cant; i++){
+		cfilter_aumentar(cfilter,str[i]);
+	}
+	for (int i=0; i<cant; i++){
+		printf("%d\n",cfilter->contadores[i]);
+	}
+
+	printf("Cantidad aproximada de pariciones del nombre bruno: %d\n", cfilter_apariciones(cfilter,"bruno"));
+	printf("Cantidad aproximada de pariciones del nombre eugenia: %d\n", cfilter_apariciones(cfilter,"eugenia"));
+	return 0;
+}*/

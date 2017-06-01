@@ -20,7 +20,11 @@ cfilter_t* cfilter_crear (size_t tam);
 //que se encuentran en las posiciones devueltas.
 //Pre: cfilter fue creado
 //Post: aumenta los contadores del cfilter.
-bool cfilter_aumentar (cfilter_t* cfilter, const char* str);
+void cfilter_aumentar (cfilter_t* cfilter, const char* str);
+
+//Pre: cfilter creado
+//Post: devuelve la cantidad de apariciones aproximadas del string en el cfilter.
+size_t cfilter_apariciones (cfilter_t* cfilter, const char* str);
 
 
 #endif
