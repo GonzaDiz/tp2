@@ -4,6 +4,7 @@
 #include <stdbool.h>  /* bool */
 #include <stddef.h>	  /* size_t */
 
+
 /* Prototipo de función de comparación que se le pasa como parámetro a las
  * diversas funciones del heap.
  * Debe recibir dos punteros del tipo de dato utilizado en el heap, y
@@ -12,7 +13,13 @@
  *       0      si  a == b
  *   mayor a 0  si  a > b
  */
-typedef int (*cmp_func_t) (const void *a, const void *b);
+
+typedef struct topic{
+	char* hashtag;
+	size_t apariciones;
+}topic_t;
+
+typedef int (*cmp_func_t) (topic_t* a, topic_t* b);
 
 
 /* Función de heapsort genérica. Esta función ordena mediante heap_sort
