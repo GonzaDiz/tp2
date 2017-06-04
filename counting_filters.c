@@ -80,19 +80,7 @@ size_t cfilter_apariciones (cfilter_t* cfilter, const char* str){
 	return apariciones;
 }
 
-//Algunos tests.
-/*int main(){
-	char* str[] = {"lucas","charly","gonza","carlos","bruno","bruno","emmanuel","santiago","eugenia","eguenia","valery","belen","ricardo","monica","laura","monica","gonzalo"};
-	size_t cant = 17;
-	cfilter_t* cfilter = cfilter_crear(500);
-	for (int i=0; i<cant; i++){
-		cfilter_aumentar(cfilter,str[i]);
-	}
-	for (int i=0; i<cant; i++){
-		printf("%d\n",cfilter->contadores[i]);
-	}
-
-	printf("Cantidad aproximada de pariciones del nombre bruno: %d\n", cfilter_apariciones(cfilter,"bruno"));
-	printf("Cantidad aproximada de pariciones del nombre eugenia: %d\n", cfilter_apariciones(cfilter,"eugenia"));
-	return 0;
-}*/
+void cfilter_destruir (cfilter_t* cfilter){
+	free(cfilter->contadores);
+	free(cfilter);
+}

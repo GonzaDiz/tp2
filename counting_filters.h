@@ -26,5 +26,8 @@ void cfilter_aumentar (cfilter_t* cfilter, const char* str);
 //Post: devuelve la cantidad de apariciones aproximadas del string en el cfilter.
 size_t cfilter_apariciones (cfilter_t* cfilter, const char* str);
 
+//Pre: cfilter creado
+//Post: destruye el cfilter
+void cfilter_destruir (cfilter_t* cfilter);
 
 #endif
