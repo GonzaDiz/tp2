@@ -48,11 +48,6 @@ int main(int argc, char const *argv[]){
 		caracteres = getline(&line, &bufsize, file);
 
 	}
-	printf("PITO PALOOOOOOOOOOOOOOOOOOOOOOOOO\n");
-	printf("%d\n",maxCant );
-
-	//Para este punto tengo todos los users en un hash y su cant de tags en un cfilter
-
 	lista_t** userTags = malloc(sizeof(lista_t*) * (maxCant+1)); // Creo un vector con listas
 
 	for (int i = 0; i<=maxCant; i++){ // una lista por posicion
@@ -64,7 +59,6 @@ int main(int argc, char const *argv[]){
 	user_t* user = malloc (sizeof(user_t));
 	while (!hash_iter_al_final(hash_iter)){
 		user->name = (char*) hash_iter_ver_actual(hash_iter);
-		//user->cantidad = cfilter_apariciones(cfilter,user->name);
 		user->cantidad = hash_obtener(hash,user->name);
 		lista_insertar_primero(userTags[*user->cantidad],user->name);
 		hash_iter_avanzar(hash_iter);
