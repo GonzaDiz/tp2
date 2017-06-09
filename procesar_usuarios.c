@@ -1,17 +1,13 @@
 #define _GNU_SOURCE
 #include "hash.h"
-#include "lib.h"
-#include "counting_filter.h"
 #include "lista.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#define TAMANIO 400000
-
 typedef struct user{
 	char* name;
-	size_t cantidad;
+	size_t* cantidad;
 }user_t;
 
 int main(int argc, char const *argv[]){
@@ -24,29 +20,36 @@ int main(int argc, char const *argv[]){
 	char* username = NULL;
 	size_t bufsize = 0;
 	size_t caracteres = 0;
-	size_t cantUsers = 0;
-	int maxCant = 0;
-	cfilter_t* cfilter = cfilter_crear(TAMANIO);
-	hash_t* hash = hash_crear(NULL);
+	size_t* canTags;
+	size_t maxCant = 0;
+	hash_t* hash = hash_crear(free);
 	caracteres = getline(&line, &bufsize, file);
 
 	while (caracteres != -1 ){
 		username = strtok(line,","); //Tomo al user
-		while (strtok(NULL,",") != NULL){ // Cuento cantidad de tweets
-			cfilter_aumentar(cfilter,username); // Guardo la cantidad en el cfilter
+
+		if (!hash_pertenece(hash,username)){
+			canTags = malloc(sizeof(size_t));
+			*canTags = 0;
+		}
+		else canTags = hash_obtener(hash,username);
+		
+		while (strtok(NULL,",") != NULL){
+			*canTags+=1;
 		}
 
-		if (cfilter_apariciones(cfilter,username) > maxCant){
-			maxCant = cfilter_apariciones(cfilter,username);
+		if (*canTags > maxCant){
+			maxCant = *canTags;
 		}
 
-		if (!hash_pertenece(hash,username)){ // Guardo el user en un hash
-			hash_guardar(hash,username,username);
-			cantUsers++;
+		if (!hash_pertenece(hash,username)){
+			hash_guardar(hash,username,canTags);
 		}
 		caracteres = getline(&line, &bufsize, file);
 
 	}
+	printf("PITO PALOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+	printf("%d\n",maxCant );
 
 	//Para este punto tengo todos los users en un hash y su cant de tags en un cfilter
 
@@ -61,8 +64,9 @@ int main(int argc, char const *argv[]){
 	user_t* user = malloc (sizeof(user_t));
 	while (!hash_iter_al_final(hash_iter)){
 		user->name = (char*) hash_iter_ver_actual(hash_iter);
-		user->cantidad = cfilter_apariciones(cfilter,user->name);
-		lista_insertar_primero(userTags[user->cantidad],user->name);
+		//user->cantidad = cfilter_apariciones(cfilter,user->name);
+		user->cantidad = hash_obtener(hash,user->name);
+		lista_insertar_primero(userTags[*user->cantidad],user->name);
 		hash_iter_avanzar(hash_iter);
 	}
 	hash_iter_destruir(hash_iter);
@@ -84,7 +88,6 @@ int main(int argc, char const *argv[]){
 	free(userTags);
 	free(user);
 	hash_destruir(hash);
-	cfilter_destruir(cfilter);
 	free(username);
 	fclose(file);
 	return 0;
