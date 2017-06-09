@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 #include "lib.h"
-#include "counting_filters.h"
+#include "counting_filter.h"
 #include "strutil.h"
 #include "pila.h"
 #include "heap.h"
