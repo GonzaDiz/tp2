@@ -1,13 +1,11 @@
 #define _GNU_SOURCE
 #include "lib.h"
-#include "counting_filter.h"
+#include "cmsketch.h"
 #include "strutil.h"
 #include "pila.h"
 #include "heap.h"
 #include "hash.h"
 #include <stdio.h>
-
-#define TAMANIO 400000
 
 /* *****************************************************************
  *                   	FUNCIONES AUXILIARES                       *
@@ -19,11 +17,11 @@ int cmp (topic_t* a,topic_t* b){
 	return -1;
 }
 
-void hash_a_heap(hash_iter_t* hash_iter, heap_t* heap, size_t k, size_t n, cfilter_t* cfilter){
+void hash_a_heap(hash_iter_t* hash_iter, heap_t* heap, size_t k, size_t n, cmsketch_t* cmsketch){
 	for (int i=0; i<k; i++){
 		topic_t* topic = malloc(sizeof(topic_t));
 		topic->hashtag = strdup((char*) hash_iter_ver_actual(hash_iter));
-		topic->apariciones = cfilter_apariciones(cfilter,topic->hashtag);
+		topic->apariciones = cmsketch_apariciones(cmsketch,topic->hashtag);
 		heap_encolar(heap,topic);
 		if (!hash_iter_avanzar(hash_iter) || hash_iter_al_final(hash_iter)) break;
 	}
@@ -32,7 +30,7 @@ void hash_a_heap(hash_iter_t* hash_iter, heap_t* heap, size_t k, size_t n, cfilt
 	while (!hash_iter_al_final(hash_iter) && contador < n ){
 		topic_t* topic = malloc(sizeof(topic_t));
 		topic->hashtag = strdup((char*) hash_iter_ver_actual(hash_iter));
-		topic->apariciones = cfilter_apariciones(cfilter,topic->hashtag);
+		topic->apariciones = cmsketch_apariciones(cmsketch,topic->hashtag);
 		topic_t* aux = malloc(sizeof(topic_t));
 		aux = heap_ver_max(heap);
 
@@ -63,7 +61,7 @@ void imprimir_tts(topic_t* aux, size_t k, pila_t* pila){
 }
 
 /* *****************************************************************
- *                       PROCESAR TWEETS                            *
+ *                       PROCESAR TWEETS                           *
  * *****************************************************************/
 int main(int argc, char const *argv[]){
 
@@ -79,19 +77,19 @@ int main(int argc, char const *argv[]){
 	size_t caracteres;
 	caracteres = getline(&tweet,&bufsize,stdin);
 	tweet[strlen(tweet)-1] = '\0'; //eliminamos el salto de linea que toma getline
-	
+	cmsketch_t* cmsketch = cmsketch_crear();
+
 	int i;
 	while (caracteres != -1){
 		size_t contador = 0;
 
-		cfilter_t* cfilter = cfilter_crear(TAMANIO);
 		hash_t * hash = hash_crear(NULL);
 
 		while (caracteres != -1 && contador < n){ // mientras pueda seguir leyendo tweets
 			i = 1; // me salteo el usuario que esta en la pos 0
 			char** separado = split(tweet,',');
 			while (separado[i]!=NULL && separado[i]!='\0'){
-				cfilter_aumentar (cfilter,separado[i]);
+				cmsketch_aumentar (cmsketch,separado[i]);
 				if (!hash_pertenece(hash,separado[i])){
 					hash_guardar(hash,separado[i],separado[i]);
 				}
@@ -102,12 +100,12 @@ int main(int argc, char const *argv[]){
 			contador++;
 			free_strv(separado);
 		}
-		//Tengo un hash con los topics sin repetir y un cfilter con las ocurrencias de cada topic
+		//Tengo un hash con los topics sin repetir y un cmsketch con las ocurrencias de cada topic
 		//Lo paso a un heap
 		hash_iter_t* hash_iter = hash_iter_crear(hash);
 		heap_t* heap = heap_crear(cmp);
-		hash_a_heap(hash_iter,heap,k,n,cfilter);
-		cfilter_destruir(cfilter); //Ya no lo necesito
+		hash_a_heap(hash_iter,heap,k,n,cmsketch);
+		//cmsketch_destruir(cmsketch); //Ya no lo necesito
 
 		//Ahora lo paso a una pila para que me quede en orden
 		pila_t* pila = pila_crear();
@@ -125,5 +123,6 @@ int main(int argc, char const *argv[]){
 		hash_destruir(hash);
 		printf("\n");
 	}
+	cmsketch_destruir(cmsketch); //Ya no lo necesito
 	return 0;
 }
